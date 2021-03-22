@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body{
+    margin: 0px;
+  }
+  
+  canvas {
+	height: 100%;
+	width: 100%;
+  }
+</style>
+</head>
+<body>
+<canvas></canvas>
+<script>
+	var c = document.querySelector('canvas');  
+  c.width = window.innerWidth - 20;
+  c.height = window.innerHeight - 20;
+  
+  var cc = c.getContext('2d');
+  
+  var mouse = {
+    x: c.width/2,
+    y: c.height/2,
+    angle: Math.PI/4
+  };
+
+  window.addEventListener('mousemove',
+    function(event){
+      mouse.x = event.x;
+      mouse.y = event.y;
+	  
+	  velocity = Math.random() * 15 + 5;
+	  //velocity = Math.sqrt(Math.square(mouse.x - gunStartX) + Math.square(c.height - mouse.y))/Math.sqrt(Math.square(c.width - gunStartX) + Math.square(c.height));
+      mouse.angle = Math.atan((c.height-mouse.y)/(mouse.x - gunStartX));
+      if(mouse.x < gunStartX)
+        mouse.angle = Math.PI/2;
+      else if(mouse.angle < Math.PI/12)
+        mouse.angle = Math.PI/12;
+		
+	  bullets.push(new Bullet());
+    }
+  );
+  
+  window.addEventListener('click',
+    function(){
+      bullets.push(new Bullet());
+    }
+  );
+  
+  function animate(){
+    requestAnimationFrame(animate);
+    
+    for(var i = 0; i < bullets.length; i++){
+      bullets[i].update();
+      if(bullets[i].y > c.height)
+        bullets.splice(i, 1);
+    }
+    update();
+  }
+  
+  var mouseAngle = 0;
+  var gravity = 0.098;
+  var velocity = 5;
+  
+  function Bullet(){
+    this.x = gunStartX;
+    this.y = c.height;
+	this.radius = Math.floor(Math.random() * 5) + 1;
+    this.color = 'rgba('+Math.floor(Math.random()*256) + ','+Math.floor(Math.random()*256) + ','+Math.floor(Math.random()*256) + ', 1)';
+    console.log(this.color);
+    this.dx =  velocity * Math.cos(mouse.angle);
+    this.dy = -velocity * Math.sin(mouse.angle);;
+    
+    this.draw = function(){
+      cc.beginPath();
+      //cc.fillStyle = this.color;
+	  cc.strokeColor = this.color;
+      cc.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+      //cc.fill();
+	  cc.stroke();
+	  cc.closePath();
+    }
+    
+    this.update = function(){
+      this.x += this.dx;
+      this.y += this.dy;
+      
+      this.dy += gravity;
+    }
+    
+    this.reset = function(){
+      this.x = gunStartX;
+      this.y = c.height;
+    
+      this.dx =  velocity * Math.cos(mouse.angle);
+      this.dy = -velocity * Math.sin(mouse.angle);;
+    }
+  }
+  
+  var bullets = [];
+  var gunStartX = 100;
+  function update(){
+    //clear all
+    cc.clearRect(0, 0, c.width, c.height);
+    
+    //target line
+    cc.strokeStyle = '#800000';
+    cc.beginPath();
+    cc.moveTo(gunStartX, c.height);
+    cc.lineTo(mouse.x, mouse.y);
+    cc.stroke();
+    
+    for(var i = 0; i < bullets.length; i++){
+      bullets[i].draw();
+    }
+    
+    cc.fillStyle = 'black';
+    cc.beginPath();
+    //cc.moveTo(gunStartX, c.height);
+    //cc.lineTo(60, c.height);
+    
+    //else if(angle > Math.PI/12)
+      //angle = Math.PI/12;
+    //console.log(angle*180/Math.PI);
+    cc.arc(gunStartX, c.height, 60, -mouse.angle - Math.PI/12, -mouse.angle + Math.PI/12);
+    cc.lineTo(gunStartX, c.height);
+    cc.fill();
+    
+    cc.fillStyle = 'blue';
+	cc.strokeStyle = 'black';
+    cc.beginPath();
+    cc.arc(gunStartX, c.height, 45, -Math.PI, -7*Math.PI/12);
+    cc.lineTo(gunStartX, c.height);
+    //cc.fill();
+	//cc.beginPath();
+	//cc.fillStyle = '#ff0000';
+    cc.arc(gunStartX, c.height, 20, -7*Math.PI/12, 0);
+    cc.lineTo(gunStartX - 45, c.height);
+    cc.fill();
+	cc.stroke();
+	cc.beginPath();
+	cc.arc(gunStartX, c.height, 40, -Math.PI, -7*Math.PI/12);
+	cc.stroke();
+    
+    
+  }
+  
+  update();
+  animate();
+</script>
+</body>
+
+</html>

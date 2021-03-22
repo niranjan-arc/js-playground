@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background-color: #000000;
+    cursor: pointer;
+    display: grid;
+}
+
+canvas {
+    align-self: center;
+    justify-self: center;
+}
+
+p {
+    color: #000000;
+    font-family:  monospace;
+    font-size: 1.25em;
+    font-weight: bold;
+    position: fixed;
+    top: 10px;
+    left: 16px;
+}

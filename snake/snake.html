@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>Snake v1.0</title>
+	<style>
+		html, body {
+			overflow: hidden;
+			margin: 0;
+			padding: 0;
+			height: 100%;
+    		width: 100%;
+		}
+
+		#canvas {
+			top: 0;
+			left: 0;
+			position: absolute;
+			align-self: center;
+    		justify-self: center;
+			z-index: -1;
+		}
+
+        .control-panel {
+            top: 0;
+            left: 0;
+			padding: 5px;
+			font: 16px monospace;
+			opacity: 0.3;
+        }
+
+		.control-panel:hover {
+			opacity: 1;
+		}
+
+		#start {
+			width: 80px;
+			height: 22px;
+			font: 16px monospace;
+			margin-top: 5px;
+		}
+	</style>
+</head>
+<body>
+    <div class="control-panel">
+			<input type="checkbox" id="foodtype" /><label for="foodtype">Enable single food</label><br>
+			<input type="checkbox" id="autohit" /><label for="autohit">Enable self collision</label><br>
+			<input type="checkbox" id="killmode" /><label for="killmode">Enable kill mode</label><br>
+			<input type="button" value="START" id="start" onclick="start()" />
+		</div>
+    </div>
+	<canvas id="canvas"></canvas>
+	<script type="text/javascript" src="script.js"></script><br>
+</body>
+</html>

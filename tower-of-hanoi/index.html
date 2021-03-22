@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+                background-color: #333;
+                overflow: hidden;
+                font-family: monospace;
+            }
+
+            canvas {
+                background-color: #333;
+                z-index: -1;
+            }
+
+            div {
+                z-index: 1;
+                position: absolute;
+                left: 0;
+                width: 100%;
+                color: #f0f0f0;
+                text-align: center;
+            }
+
+            h1 {
+                text-shadow: -2px -2px #b1b1b1;
+            }
+
+            .header {
+                top: 0;
+            }
+
+            .footer {
+                bottom: 0;
+            }
+
+            .btn {
+                background: #3498db;
+                color: #ffffff;
+                font-size: 16px;
+                padding: 4px 8px 4px 8px;
+                text-decoration: none;
+                border: 1px solid black;
+                box-shadow: 10px 10px 5px #030303;
+                cursor: pointer;
+            }
+
+            .btn:hover {
+                background: #3cb0fd;
+                text-decoration: none;
+                box-shadow: 6px 10px 5px #030303;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Tower of Hanoi</h1>
+            Number of Disks: <input id="no-of-disks" type="text" placeholder="Min. 3 and Max. 10"></input><br><br>
+            <span id="restart" class="btn" onclick="resetGame(false)">Restart</span>
+        </div>
+        <div class="footer">
+            You took <span id="your-turn">0</span> turns so far.
+            Best Solution has <span id="best-turn">0</span> turns.<br><br>
+            <span id="solve" class="btn" onclick="resetGame(true)">Reset & Solve</span>
+            <br><br>
+        </div>
+        <canvas id="hanoi-canvas"></canvas>
+        <script>
+            //game initilization input
+            var NoOfDisks = 3;
+            var NoOfTurns = 0;
+            var prevBar;
+            var autoUpdate = true;
+            var solved = false;
+
+            const best  = document.getElementById('best-turn');
+            const your = document.getElementById('your-turn');
+
+            //constants
+            const canvas = document.getElementById('hanoi-canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const diskMinWidth = 30;
+            const diskWidthInc = 10;
+            const diskHeight = 10;
+
+            const barWidth = 10;
+            const barHeight = diskHeight * 12;
+
+
+            //utility functions
+            function isClicked(rect, x, y) {
+                var result = false;
+                if(x >= rect.x && x <= (rect.x + rect.w) && y >= rect.y && y <= (rect.y + rect.h))
+                    result = true;
+
+                return result;
+            }
+
+            //classes
+            function Bar(pos, color, name) {
+                this.pos = pos;
+                this.color = color;
+                this.disks = [];
+                this.name = name;
+
+                this.x = Math.floor((canvas.width / 4) * this.pos  - (barWidth / 2));
+                this.y = Math.floor((canvas.height / 2)  - (barHeight / 2));
+                this.w = barWidth;
+                this.h = barHeight;
+
+                this.draw = function() {
+                    context.fillStyle = this.color;
+                    context.fillRect(this.x, this.y, this.w, this.h);
+
+                    for(var i = 0; i < this.disks.length; ++i) {
+                        this.disks[i].draw();
+                    }
+
+                    context.fillStyle = "white";
+                    context.fillText(this.name, this.x - Math.floor(context.measureText(this.name).width / 2) + barWidth / 2, this.y + this.h + 20 );
+                }
+
+                this.insert = function(disk) {
+                    disk.x = this.x + (barWidth / 2) - disk.w / 2;
+                    disk.y = (this.y + this.h) - (this.disks.length + 1) * diskHeight;
+                    this.disks.push(disk);
+                }
+
+                this.remove = function(x, y) {
+                    if(this.disks.length > 0) {
+                        var disk = this.disks.pop();
+                        disk.x = x;
+                        disk.y = y;
+
+                        return disk;
+                    }
+                    return undefined;
+                }
+            }
+
+            function Disk(pos, color) {
+                this.pos = pos;
+                this.color = color;
+
+                this.x = undefined;
+                this.y = undefined;
+                this.w = diskMinWidth + (this.pos - 1) * diskWidthInc;
+                this.h = diskHeight;
+
+                this.draw = function() {
+                    context.fillStyle = this.color;
+                    context.fillRect(this.x, this.y + 1, this.w, this.h - 1);
+                }
+            }
+
+            //reset game
+            function resetGame(doSolve) {
+                //getting bars
+                bar1 = new Bar(1, 'orangered', "SOURCE");
+                bar2 = new Bar(2, 'orangered', "SPARE");
+                bar3 = new Bar(3, 'orangered', "TARGET");
+
+                diskInHand = undefined;
+                NoOfTurns = 0;
+
+                //getting disks
+                if(!doSolve) {
+                    NoOfDisks = document.getElementById("no-of-disks").value;
+                    if(NoOfDisks < 3)
+                        NoOfDisks = 3;
+                
+                    if(NoOfDisks > 10)
+                        NoOfDisks = 10;
+                }
+
+                for(var i = NoOfDisks; i >= 1; --i) {
+                    var disk = new Disk(i, 'lightgreen');
+                    bar1.insert(disk);
+                }
+
+                best.innerHTML = Math.pow(2, NoOfDisks) - 1;
+                your.innerHTML = NoOfTurns;
+                
+                if(doSolve)
+                    solve();
+            }
+
+            //solving
+            function hanoi(src, dest, temp, ndisks) {
+                if(ndisks == 1) {
+                    dest.insert(src.remove());
+                    console.log(src.name, "->", dest.name);
+                }
+                else {
+                    hanoi(src, temp, dest, ndisks - 1);
+                    hanoi(src, dest, temp, 1);
+                    //dest.insert(src.remove());
+                    hanoi(temp, dest, src, ndisks - 1);
+                }
+            }
+
+            function solve() {
+                console.log("Solving...");
+                hanoi(bar1, bar3, bar2, bar1.disks.length);
+                console.log("Solved!");
+                alert("See solution in console.");
+            }
+
+            //drawing everthing
+            function draw() {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                bar1.draw();
+                bar2.draw();
+                bar3.draw();
+
+                if(diskInHand) {
+                    diskInHand.draw();
+                }
+
+                requestAnimationFrame(draw);
+            }            
+
+            //events
+            addEventListener("mousedown", function(event) {
+                var mouseX = event.x;
+                var mouseY = event.y;
+
+                var flag = false;
+                var bar;
+                if(isClicked(bar1, mouseX, mouseY)) {
+                    flag = true;
+                    bar = bar1;
+                }
+                else if(isClicked(bar2, mouseX, mouseY)) {
+                    flag = true;
+                    bar = bar2;
+                }
+                else if(isClicked(bar3, mouseX, mouseY)) {
+                    flag = true;
+                    bar = bar3;
+                }
+
+                if(flag){
+                    if(diskInHand) {
+                        var n = bar.disks.length;
+                        if(n == 0 || bar.disks[n-1].pos > diskInHand.pos) {
+                            bar.insert(diskInHand);
+                            diskInHand = undefined;
+
+                            if(prevBar != bar) {
+                                NoOfTurns++;
+                                your.innerHTML = NoOfTurns;
+                            }
+
+                            if(bar3.disks.length === NoOfDisks) {
+                                setTimeout(
+                                    function() {
+                                        alert("Well done. You did it!\nYou took " + NoOfTurns + " turns.\nReset Game.");
+                                        resetGame();
+                                    }, 500);
+                            }
+                        }
+                        else {
+                            alert("You can't put disks of higher width onto disks of lower width!");
+                        }
+                    }
+                    else {
+                        diskInHand = bar.remove(mouseX, mouseY);
+                        prevBar = bar;
+                    }
+                }
+            });
+
+            addEventListener("mousemove", function(event) {
+                if(diskInHand) {
+                    diskInHand.x = event.x - diskInHand.w / 2;
+                    diskInHand.y = event.y - diskInHand.h / 2;
+                }
+            });
+
+            //start game
+            var bar1, bar2, bar3, diskInHand;
+            resetGame(false);
+            draw();
+
+        </script>
+    </body>
+</html>

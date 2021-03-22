@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Courier;
+        }
+
+        .btn {
+            display: inline-block;
+            border: 1px solid black;
+            padding: 4px 8px;
+            border-radius: 3px;
+            background-color: steelblue;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: cornflowerblue;
+            border: 1px solid blue;
+            box-shadow: 0px 0px 10px 2px rgba(0, 0, 255, 0.3);   
+            text-shadow: -1px -1px black;
+        }
+
+        input {
+            border: 1px solid black;
+            margin: 5px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin: 0px;
+            min-width: 50%;
+            background-color: steelblue;
+            color: wheat;
+            font-family: Courier New, Courier, monospace;
+        }
+
+        input:focus {
+            border: 1px solid blue;
+            box-shadow: 0px 0px 10px 2px rgba(0, 0, 255, 0.3);   
+        }
+
+        .wrapper {
+            display: block;
+            padding: 10px;
+        }
+
+        canvas {
+            position: absolute;
+            background-color: #e3e3e3;
+            margin: 5px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        Image Link: <input type="text" name="image-url" id="link"/>
+        <span class="btn" onclick="generatePuzzle()">Generate Puzzle</span><br>
+        <span class="btn" onclick="generatePuzzle('image.jpg')">Load Default Puzzle</span>
+    </div>
+    <canvas id="jigsaw-canvas"></canvas>
+    <script>
+        const c = document.getElementById('jigsaw-canvas');
+        const cc = c.getContext('2d');
+
+        c.width = window.innerWidth - 10;
+        c.height = window.innerHeight  - c.previousElementSibling.offsetHeight - 10;
+
+
+        function generatePuzzle(path) {
+            var link = document.getElementById('link').value;
+            if(img) {
+                delete(img);
+                puzzlePieces.splice(0, puzzlePieces.length);
+            }
+            img = new Image();
+
+            if(link === "" || path) {
+                link = path;
+            }
+
+            console.log(link);
+            img.src = link;
+            img.onload = puzzleImageOnLoad;
+        }
+
+        var img;
+
+        var PPWIDTH;
+        var PPHEIGHT;
+        var PPCOUNT = 4;
+        var puzzlePieces = [];
+        var selectedPP;
+
+        function puzzleImageOnLoad() {
+            var imgw = img.width;
+            var imgh = img.height;
+
+            console.log(imgw + " " + imgh);
+
+            PPWIDTH = imgw / PPCOUNT;
+            PPHEIGHT = imgh / PPCOUNT;
+
+            var x = 0;
+            var y = 0;
+            for (var i = 0; i < PPCOUNT; ++i) {
+                for (var j = 0; j < PPCOUNT; ++j) {
+                    var pp = new PuzzlePiece(x + i * PPWIDTH, y + j * PPHEIGHT, x + i * PPWIDTH, y + j * PPHEIGHT, i * PPCOUNT + j);
+                    puzzlePieces.push(pp);
+                }
+            }
+
+            shuffle(puzzlePieces);
+
+            draw();
+            console.log("Done...");
+        }
+
+
+        function shuffle(array) {
+            var currentIndex = array.length, randomIndex;
+            var temporaryValue = {x: 0, y: 0, pos: 0};
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                // And swap it with the current element.
+                temporaryValue.x = array[currentIndex].x;
+                temporaryValue.y = array[currentIndex].y;
+                temporaryValue.pos = array[currentIndex].pos;
+                
+                array[currentIndex].x = array[randomIndex].x;
+                array[currentIndex].y = array[randomIndex].y;
+                array[currentIndex].pos = array[randomIndex].pos;
+                
+                array[randomIndex].x = temporaryValue.x;
+                array[randomIndex].y = temporaryValue.y;
+                array[randomIndex].pos = temporaryValue.pos;
+                //swapped
+            }
+
+            return array;
+        }
+
+
+        function PuzzlePiece(sx, sy, x, y, pos) {
+            this.sx = sx;
+            this.sy = sy
+
+            this.x = x;
+            this.y = y;
+
+            this.actualPos = pos;
+            this.pos = pos;
+
+            this.draw = function () {
+                cc.drawImage(img, this.sx, this.sy, PPWIDTH, PPHEIGHT, this.x, this.y, PPWIDTH, PPHEIGHT);
+                cc.strokeStyle = '2px solid black';
+                cc.strokeRect(this.x, this.y, PPWIDTH, PPHEIGHT);
+            }
+
+            this.isSelected = function (x, y) {
+                if (x > this.x && x < (this.x + PPWIDTH) && y > this.y && y < (this.y + PPHEIGHT))
+                    return true;
+                return false;
+            }
+        }
+
+        function draw() {
+            cc.clearRect(0, 0, c.width, c.height);
+            for (var i = 0; i < puzzlePieces.length; ++i)
+                puzzlePieces[i].draw();
+
+            requestAnimationFrame(draw);
+        }
+
+        c.addEventListener('mousemove', function () {
+            mx = event.x - c.getBoundingClientRect().left;
+            my = event.y - c.getBoundingClientRect().top;
+            if (selectedPP) {
+                selectedPP.x = mx - PPWIDTH / 2;
+                selectedPP.y = my - PPHEIGHT / 2;
+            }
+        });
+
+        c.addEventListener('mousedown', function (event) {
+            mx = event.x - c.getBoundingClientRect().left;
+            my = event.y - c.getBoundingClientRect().top;
+            //console.log("" + mx + " " + my);
+            for (var i = 0; i < puzzlePieces.length; ++i) {
+                if (puzzlePieces[i].isSelected(mx, my)) {
+                    selectedPP = puzzlePieces[i];
+                    break;
+                }
+            }
+        });
+
+        c.addEventListener('mouseup', function (event) {
+            if(!selectedPP)
+                return;
+            for (var i = 0; i < puzzlePieces.length; ++i) {
+                if(selectedPP != puzzlePieces[i]) { //vicinity of selectedPP
+                    var distT = (puzzlePieces[i].y + PPHEIGHT) - selectedPP.y;
+                    var distB = (selectedPP.y + PPHEIGHT) - puzzlePieces[i].y;
+                    var distR = (puzzlePieces[i].x + PPWIDTH) - selectedPP.x;
+                    var distL = (selectedPP.x + PPWIDTH) - puzzlePieces[i].x;
+
+                    //top
+                    if(Math.abs(distT) < PPHEIGHT / 4 && Math.abs(selectedPP.x - puzzlePieces[i].x) < PPWIDTH / 4) {
+                        selectedPP.x = puzzlePieces[i].x;
+                        selectedPP.y = (puzzlePieces[i].y + PPHEIGHT);
+                        selectedPP.pos = puzzlePieces[i].actualPos - PPCOUNT;
+                    }
+
+                    //left
+                    if(Math.abs(distL) < PPWIDTH / 4 && Math.abs(selectedPP.y - puzzlePieces[i].y) < PPHEIGHT / 4) {
+                        selectedPP.x = puzzlePieces[i].x - PPWIDTH;
+                        selectedPP.y = puzzlePieces[i].y;
+                        selectedPP.pos = puzzlePieces[i].actualPos - 1;
+                    }
+
+                    //bottom
+                    if(Math.abs(distB) < PPHEIGHT / 4 && Math.abs(selectedPP.x - puzzlePieces[i].x) < PPWIDTH / 4) {
+                        selectedPP.x = puzzlePieces[i].x;
+                        selectedPP.y = (puzzlePieces[i].y - PPHEIGHT);
+                        selectedPP.pos = puzzlePieces[i].actualPos + PPCOUNT;
+                    }
+
+                    //right
+                    if(Math.abs(distR) < PPWIDTH / 4 && Math.abs(selectedPP.y - puzzlePieces[i].y) < PPHEIGHT / 4) {
+                        selectedPP.x = puzzlePieces[i].x + PPWIDTH;
+                        selectedPP.y = puzzlePieces[i].y;
+                        selectedPP.pos = puzzlePieces[i].actualPos + 1;
+                    }
+                }
+            }
+
+            var solved = true;
+            for (var i = 0; i < puzzlePieces.length; ++i) {
+                if(puzzlePieces[i].pos !== puzzlePieces[i].actualPos){
+                    solved = false;
+                    break;
+                }
+            }
+
+            if(solved) {
+                alert("Yay!!! You did it.");
+            }
+
+            selectedPP = undefined;
+        });
+    </script>
+</body>
+
+</html>

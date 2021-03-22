@@ -1,0 +1,40 @@
+button {
+    font: 16px monospace;
+}
+
+table {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-collapse: collapse;
+}
+
+td, tr {
+    font: 16px monospace;
+    text-align: center;
+    border: 1px solid;
+    padding: 2px;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+/* #controlDiv {
+    width: 30%;
+    height: 100%;
+    float: right;
+    background: white;
+} */
+
+.value {
+    padding: 0px 5px 0px 5px;
+    width: 50px;
+    text-align: center;
+}
