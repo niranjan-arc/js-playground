@@ -81,10 +81,6 @@ n3.value = 1;
 m1.value = 1;
 m2.value = 1;
 
-$(document).click('minusBtn, plusBtn', function(event) {
-    const change = $(event.target).is('.minusBtn') ? -0.5 : +0.5
-    const current = parseFloat($(event.target).siblings('.value').val())
-    $(event.target).siblings('.value').val(current + change)
-})
 
-mainLoop();
+
+// mainLoop();

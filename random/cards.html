@@ -1,0 +1,318 @@
+<html>
+<head>
+<title>Cards</title>
+<style>
+    body {
+        padding: 0px;
+        margin: 0px;
+    }
+</style>
+</head>
+<body>
+<canvas id="canvas" width=800px height=500px></canvas>
+<script>
+c = document.getElementById('canvas');
+cc = c.getContext('2d');
+
+cc.font = '24px Arial';
+cc.textBaseline = 'hanging';
+cc.lineWidth = 1;
+
+SPADE = 0;
+CLUB = 1;
+HEART = 2;
+DIAMOND = 3;
+COLORS = ["black", "black", "red", "red"];
+SUITES = ['\u2660', '\u2663', '\u2665', '\u2666'];
+
+PLAYER_BOX_WIDTH = 230;
+PLAYER_BOX_HEIGHT = 100;
+
+PLAYER_PRIMARY_BOX_WIDTH = 780;
+PLAYER_PRIMARY_BOX_HEIGHT = 180;
+
+function Player(playerName, x, y, isPrimary) {
+    this.deck = undefined;
+    this.name = playerName;
+    this.isPrimary = isPrimary == undefined ? false : true;
+    this.x = x;
+    this.y = y;
+    this.draw = function() {
+        cc.strokeStyle = "black";
+        var w = this.isPrimary ? PLAYER_PRIMARY_BOX_WIDTH : PLAYER_BOX_WIDTH;
+        var h = this.isPrimary ? PLAYER_PRIMARY_BOX_HEIGHT : PLAYER_BOX_HEIGHT;
+        cc.strokeRect(this.x, this.y, w, h);
+        cc.fillStyle = "black";
+        cc.fillText(this.name, this.x + 10, this.y + 10);
+        this.deck.draw();
+    }
+}
+
+ASCII_ZERO = 48;
+
+DISCARD_DECK = 0;
+OTHER_PLAYER_DECK = 1;
+PRIMARY_PLAYER_DECK = 2;
+COMPLETE_DECK = 3;
+CUSTOM_DECK = 4;
+
+
+function Card(suite, order) {
+	this.x = 0;
+	this.y = 0;
+    this.pivotX = 0;
+	this.pivotY = 0;
+	this.suite = suite;
+	this.order = order;
+	this.facedUp = false;
+	this.draw = function(x, y) {
+        this.x = x;
+        this.y = y;
+		if (this.facedUp) {
+			cc.strokeStyle = "black";
+			cc.strokeRect(this.x, this.y, 33, 49);
+			cc.fillStyle = "white";
+			cc.fillRect(this.x, this.y, 33, 49);
+			cc.fillStyle = COLORS[this.suite];
+			cc.fillText(this.order, this.x + 2, this.y + 4);
+			cc.fillText(SUITES[this.suite], this.x + 10, this.y + 28);
+		}
+		else {
+			cc.strokeStyle = "black";
+			cc.strokeRect(this.x, this.y, 33, 49);
+			cc.fillStyle = "blue";
+			cc.fillRect(this.x, this.y, 33, 49);
+		}
+	}
+	this.containsPoint = function(x, y) {
+		if (x > this.x && x < (this.x + 49) &&
+			y > this.y && y < (this.y + 33)) {
+			return true;
+		}
+		return false;
+	}
+}
+
+var DeckFactory = {};
+DeckFactory.createDiscardDeck = function(cards) {
+    for(var i = 0; i < cards.length; ++i) {
+        card = cards[i];
+        card.facedUp = true;
+    }
+    
+    var discardDeck = new Deck(DISCARD_DECK, cards);
+    return discardDeck;
+}
+
+DeckFactory.getCompleteDeck = function() {
+    var cards = [];
+    // add all cards
+    for (var suite = 0; suite < 4; ++suite) {
+        cards.push(new Card(suite, "A"));
+        for (var j = 2; j <= 10; ++j) {
+            cards.push(new Card(suite, j.toString()));
+        }
+        cards.push(new Card(suite, "J"));
+        cards.push(new Card(suite, "Q"));
+        cards.push(new Card(suite, "K"));
+    }
+    
+    var completeDeck = new Deck(COMPLETE_DECK, cards);
+    return completeDeck;
+}
+
+DeckFactory.getEmptyDeck = function() {
+    var noCards = [];
+    var emptyDeck = new Deck(CUSTOM_DECK, noCards, COMPLETE_DECK);
+    return emptyDeck;
+}
+
+function Deck(deckType, cards, rootDeckType) {
+    this.deckType = deckType == undefined ? COMPLETE_DECK : deckType;
+    this.isCustomDeck = this.deckType == CUSTOM_DECK;
+    this.cards = cards ? cards : (this.deckType == COMPLETE_DECK ? DeckFactory.getCompleteDeck() : DeckFactory.getEmptyDeck());
+    this.rootDeckType = rootDeckType == undefined ? deckType : rootDeckType;
+    
+    this.setXY = function(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    this.shuffle = function(shuffleCount) {
+        if(shuffleCount == undefined || (shuffleCount < 1 || shuffleCount > 10)) {
+            shuffleCount = 1;
+        }
+        while(shuffleCount > 0) {
+            for (var i = this.cards.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = this.cards[i];
+                this.cards[i] = this.cards[j];
+                this.cards[j] = temp;
+            }
+            shuffleCount--;
+        }
+    }
+    this.deal = function(cardIndex, numOfCards, doRandom) {
+        if(doRandom) {
+            var dealtCards = [];
+            for (var i = 0; i < numOfCards; ++i) {
+                var randomIndex = Math.floor(Math.random() * this.cards.length);
+                var card = this.cards.splice(randomIndex, 1)[0];
+                dealtCards.push(card);
+            }
+            return dealtCards;
+        }
+        else {
+            return this.cards.splice(cardIndex, numOfCards);
+        }
+    }
+    this.draw = function() {
+        deckType = this.deckType == CUSTOM_DECK ? this.rootDeckType : this.deckType;
+        var x = this.x;
+        var y = this.y;
+        var totalCards = this.cards.length;
+        for(var index = 0; index < totalCards; ++index) {
+            card = this.cards[index];
+            if(card.isPicked || (card.x != 0 && card.y != 0)) {
+                card.draw(card.x, card.y);
+            }
+            else {
+                switch (deckType) {
+                    case DISCARD_DECK:
+                        card.draw(x + index * 1, y);
+                        break;
+                    case PRIMARY_PLAYER_DECK:
+                        card.draw(x + index * 48, y);
+                        break;
+                    case OTHER_PLAYER_DECK:
+                        card.draw(x + index * 5, y);
+                        break;
+                    case COMPLETE_DECK:
+                        card.draw(x, y);
+                        break;
+                }
+            }
+        }
+        
+    }
+}
+
+c.addEventListener("mousedown", function(event) {
+	var x = event.x;
+	var y = event.y;
+    var thisHand = primaryPlayer.deck;
+	for (var i = 0; i < thisHand.cards.length; ++i) {
+		var card = thisHand.cards[i];
+		if (card.containsPoint(x, y)) {
+			if (card.facedUp) {
+                card.isPicked = true;
+                pickedCard = card;
+                pickedCard.pivotX = x - card.x;
+                pickedCard.pivotY = y - card.y;
+			}
+			break;
+		}
+	}
+});
+
+c.addEventListener("mousemove", function(event) {
+	if (pickedCard !== undefined) {
+		pickedCard.x = event.x - pickedCard.pivotX;
+		pickedCard.y = event.y - pickedCard.pivotY;
+	}
+});
+
+c.addEventListener("mouseup", function(event) {
+	var x = event.x;
+	var y = event.y;
+    var thisHand = primaryPlayer.deck;
+    if(isInsideDeckRect(x, y)) {
+        console.log("inside rect");
+        cards = deck.deal(deck.cards.length - 1, 1);
+        cards[0].x = 0;
+        cards[0].y = 0;
+        primaryPlayer.deck.cards = primaryPlayer.deck.cards.concat(cards);
+    }
+	else if (pickedCard !== undefined) {
+        pickedCard.isPicked = false;
+		pickedCard = undefined;
+	}
+	else {
+		for (var i = 0; i < thisHand.cards.length; ++i) {
+			var card = thisHand.cards[i];
+			if (!card.facedUp && card.containsPoint(x, y)) {
+				card.facedUp = true;
+				break;
+			}
+		}
+	}
+});
+
+function update() {
+
+}
+
+
+var FPS = 30;
+var pickedCard;
+var taken = false;
+
+var deck = DeckFactory.getCompleteDeck();;
+var primaryPlayer;
+var otherPlayers = [];
+
+primaryPlayer = new Player("ME", 10, 310, true);
+primaryPlayer.deck = new Deck(PRIMARY_PLAYER_DECK, deck.deal(0, 10, true));
+primaryPlayer.deck.setXY(20, 350);
+for(var i = 0; i < primaryPlayer.deck.cards.length; ++i) {
+    primaryPlayer.deck.cards[i].facedUp = true;
+}
+
+
+var player;
+for(var i = 0; i < 3; ++i) {
+    x = 10 + i * (PLAYER_BOX_WIDTH + 46);
+    y = 10;
+    player = new Player("PLAYER" + (i+1), x, y);
+    player.deck = new Deck(OTHER_PLAYER_DECK, deck.deal(0, 10, true));
+    player.deck.setXY(x + 10, y + 40);
+    
+    otherPlayers.push(player);
+}
+
+var discardDeck = DeckFactory.createDiscardDeck(deck.deal(0, 1, true));
+discardDeck.setXY(300, 200);
+
+deck.shuffle(5);
+deck.setXY(200, 200);
+var deckRect = [190, 190, 53, 69];
+function isInsideDeckRect(x, y) {
+    if (x > deckRect[0] && x < (deckRect[0] + deckRect[2]) &&
+        y > deckRect[1] && y < (deckRect[1] + deckRect[3])) {
+        return true;
+    }
+    return false;
+}
+
+
+function draw() {
+	cc.clearRect(0, 0, c.width, c.height);
+    
+    cc.strokeRect(deckRect[0], deckRect[1], deckRect[2], deckRect[3]);
+    deck.draw();
+    
+    discardDeck.draw();
+    
+    primaryPlayer.draw();
+    for(var i in otherPlayers) {
+        var player = otherPlayers[i];
+        player.draw();
+    }
+}
+
+setInterval(function() {
+	update();
+	draw();
+}, 1000 / FPS);
+</script>
+</body>
+</html>

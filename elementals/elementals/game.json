@@ -1,0 +1,104 @@
+{
+    "elemental": {
+        "air": {
+            "1": {
+                "hp": 4,
+                "attack": 3,
+                "range": 2,
+                "movement": 2
+            },
+            "2": {
+                "hp": 12,
+                "attack": 5,
+                "range": 4,
+                "movement": 4
+            },
+            "3": {
+                "hp": 40,
+                "attack": 10,
+                "range": 7,
+                "movement": 7
+            }
+        },
+        "fire": {
+            "1": {
+                "hp": 4,
+                "attack": 3,
+                "range": 1,
+                "movement": 1
+            },
+            "2": {
+                "hp": 12,
+                "attack": 5,
+                "range": 3,
+                "movement": 3
+            },
+            "3": {
+                "hp": 40,
+                "attack": 10,
+                "range": 5,
+                "movement": 5
+            }
+        },
+        "water": {
+            "1": {
+                "hp": 4,
+                "attack": 3,
+                "range": 1,
+                "movement": 1
+            },
+            "2": {
+                "hp": 12,
+                "attack": 5,
+                "range": 3,
+                "movement": 3
+            },
+            "3": {
+                "hp": 40,
+                "attack": 10,
+                "range": 5,
+                "movement": 5
+            }
+        },
+        "earth": {
+            "1": {
+                "hp": 5,
+                "attack": 3,
+                "range": 1,
+                "movement": 1
+            },
+            "2": {
+                "hp": 15,
+                "attack": 5,
+                "range": 3,
+                "movement": 3
+            },
+            "3": {
+                "hp": 45,
+                "attack": 10,
+                "range": 5,
+                "movement": 5
+            }
+        },
+        "void": {
+            "1": {
+                "hp": 4,
+                "attack": 3,
+                "range": 1,
+                "movement": 1
+            },
+            "2": {
+                "hp": 10,
+                "attack": 5,
+                "range": 3,
+                "movement": 3
+            },
+            "3": {
+                "hp": 36,
+                "attack": 10,
+                "range": 14,
+                "movement": 19
+            }
+        }
+    }
+}

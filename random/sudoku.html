@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sudoku</title>
+	<style>
+		body {
+			margin: 0px;
+			padding: 10px;
+		}
+
+		canvas {
+			background-color: gray;
+		}
+	</style>
+</head>
+<body>
+<canvas id='game-canvas'></canvas>
+<script type="text/javascript">
+	const canvas = document.querySelector('canvas');
+	const ctx = canvas.getContext('2d');
+
+	const grid = 32;
+	canvas.width = 9 * grid;
+	canvas.height = 9 * grid;
+
+	
+	var matrix = [];
+	
+	var rows = [];
+	var cols = [];
+	var blocks = [];
+
+	for (var i = 0; i < 9; ++i) {
+		rows.push(new Array(9).fill(0));
+		cols.push(new Array(9).fill(0));
+		blocks.push(new Array(9).fill(0));
+		matrix.push(new Array(9).fill(0));
+	}
+
+/*
+
+	for(var i = 0; i < 9; ++i) {
+		for(var j = 0; j < 9; ++j) {
+			var b = ((i / 3) | 0)*3 + ((j / 3) | 0);
+		
+			var valid = subsetOfValid(i, j, b);
+			var num = valid[(Math.random() * valid.length) | 0];
+		
+			if(num === undefined)
+				num = -1;
+		
+			rows[i].push(num);
+			cols[j].push(num);
+			blocks[b].push(num);
+		}
+	}
+
+function subsetOfValid(r, c, b) {
+	var row = rows[r];
+	var col = cols[c];
+	var block = blocks[b];
+	var valid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	
+	for(var i = 0; i < 9; ++i) {
+		var val = valid[i];
+		if(row.indexOf(val) > -1 || col.indexOf(val) > -1 || block.indexOf(val) > -1){
+			valid[i] = 0;
+		}
+	}
+
+	for(var i = valid.length - 1; i >= 0; --i) {
+		if(valid[i] === 0)
+			valid.splice(i, 1);
+	}
+	
+	
+	return valid;
+}
+	
+*/
+	/*
+	for(var i = 1; i <= 9; ++i ) {
+		var rvalid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+		var cvalid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+		console.log("num " + i);
+		for(var b = 0; b < 9; ++b) {
+			var flag = false;
+			var r, c;
+			while(!flag){
+				r = Math.floor(b/3) * 3 + ((Math.random() * 3) | 0);
+				if(rows[r].indexOf(i) == -1){
+					flag = true;
+				}
+			}
+			flag = false;
+			while(!flag){
+				c = ((b%3)*3) + ((Math.random() * 3) | 0);
+				if(cols[c].indexOf(i) == -1 && rows[r][c] == 0){
+					flag = true;
+				}
+			}
+			//if(rows[r][c] !== 0)
+			//	flag = false;
+			//}
+			
+			//console.log(r + " " + c);
+			
+			rows[r][c] = i;
+			cols[c][r] = i;
+			blocks[b][(r%3)*3 + c%3] = i;
+		}
+		console.log(rows);
+	} */
+	
+	//////////
+	
+	
+
+var rows = [];
+var rowsPrev = [];
+var inLoop = 0;
+
+function reset() {
+	delete(rows);
+	delete(rowsPrev);
+	
+	for (var i = 0; i < 9; ++i) {
+		rows.push(new Array(9).fill(0));
+	}
+	
+	inLoop = 0;
+}
+
+
+function getMatrix() {
+
+reset();
+
+for(var num = 1; num <= 9; ++num) {
+	if(inLoop > 1000){
+		return false;
+	}
+	var numValid;
+	rowsPrev = copy(rows);
+	for(var row = 0, count = 0; row < 9; ++row, ++count) {
+		inLoop++;
+		if(inLoop > 1000)
+			break;
+		
+		if(count % 3 === 0) {
+			var invalid = [];
+			for(var j = 0; j < row; ++j) {
+				var numi = rows[j].indexOf(num);
+				if(numi > -1)
+					invalid.push(rows[j].indexOf(num));
+			}
+			//console.log("row: " + row + " || invalid: " + invalid);
+			numValid = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+			for(var j = 0; j < invalid.length; ++j) {
+				//if( invalid.indexOf(numValid[i]) > -1)
+				numValid.splice(numValid.indexOf(invalid[j]), 1);
+			}
+			//console.log("numValid: " + numValid);
+		}
+		
+		//console.log("ROW: " + (row+1) + ", NUM: " + num + ", numValid: " + numValid);
+		
+		var rowValid = getRowValid(row);
+		var valid = getValid(rowValid, numValid);
+		
+		var v = Math.floor(Math.random() * valid.length);
+		
+		if(valid[v] != undefined){
+			if(valid[v] >= 0 && valid[v] <= 2){
+				var p;
+				p = numValid.indexOf(0); if(p > -1) numValid.splice( p, 1);
+				p = numValid.indexOf(1); if(p > -1) numValid.splice( p, 1);
+				p = numValid.indexOf(2); if(p > -1) numValid.splice( p, 1);
+			}
+			else if(valid[v] >= 3 && valid[v] <= 5){
+				var p;
+				p = numValid.indexOf(3); if(p > -1) numValid.splice( p, 1);
+				p = numValid.indexOf(4); if(p > -1) numValid.splice( p, 1);
+				p = numValid.indexOf(5); if(p > -1) numValid.splice( p, 1);
+			}
+			else {
+				var p;
+				p = numValid.indexOf(6); if(p > -1) numValid.splice( p, 1);
+				p = numValid.indexOf(7); if(p > -1) numValid.splice( p, 1);
+				p = numValid.indexOf(8); if(p > -1) numValid.splice( p, 1);
+			}
+			//console.log("number: " + num + "row: " + row + "col: " + v);
+			rows[row][valid[v]] = num;
+		}
+		else{
+			//console.log("ROW: " + (row+1) + ", NUM: " + num + ", ERROR!!!");
+			//console.log("Problem with " + inLoop);
+			delete(rows);
+			rows = copy(rowsPrev);
+			row = -1;
+			count = -1;
+			continue;
+		}
+	}
+	//console.log("\\\\");
+}
+return true;
+}
+
+
+
+function copy(src) {
+	var target = [];
+	for(var i = 0; i < src.length; i++) {
+		target.push(new Array(src[i].length));
+		for(var j = 0; j < src[i].length; j++)
+			target[i][j] = src[i][j];
+	}
+	
+	return target;
+}
+
+function getRowValid(r) {
+	var valid = [];
+	for(var i = 0; i < 9; ++i) {
+		if(rows[r][i] == 0) {
+			valid.push(i);
+		}
+	}
+	
+	return valid;
+}
+
+function getValid(arr1, arr2) {
+	var valid = []; 
+	for(var i = 0; i < arr1.length; ++i) {
+		if(arr2.indexOf(arr1[i]) > -1)
+			valid.push(arr1[i]);
+	}
+	//console.log("arr1: " + arr1 + " || arr2: " + arr2 + "valid: " + valid);
+	return valid;
+}
+	
+	
+	
+	
+	//////////
+	
+	console.log("Creating matrix...");
+	var done = getMatrix();
+	
+	if(done) {
+		matrix = rows;
+		console.log("Found a valid puzzle!");
+	}
+	else {
+		console.log("Valid puzzle not available at this moment!");
+		console.log("Refresh the page and try again!");
+	}
+
+	for (var i = 0; i < 3; ++i) {
+		for (var j = 0; j < 3; ++j) {
+			if((i + j) % 2 == 0)
+				ctx.fillStyle = 'rgb(151, 151, 151)';
+			else
+				ctx.fillStyle = 'rgb(101, 101, 101)';
+			ctx.fillRect(i*grid*3, j*grid*3, grid*3, grid*3);
+		}
+	}
+
+	ctx.font='22px sans-serif';
+	ctx.fillStyle = 'black';
+
+	for (var i = 0; i < 9; ++i) {
+		for (var j = 0; j < 9; ++j) {
+			ctx.fillText('' + matrix[j][i], i*grid + grid/4 + 3, j*grid + 3*grid/4 + 1);
+		}
+	}	
+
+</script>
+</body>
+</html>

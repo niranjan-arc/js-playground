@@ -4,9 +4,85 @@
     <title>Supercurves</title>
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <style>
+        .container {
+            box-sizing: border-box;
+        }
+
+        .hud {
+            background-color: rgba(255, 255, 255, 0.1);
+            width: 256px;
+            font-size: 16px;
+            font-family: monospace;
+            color: #0C0C0C;
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            border: 1px solid #c0c0c0;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .hud .close {
+            width: 100%;
+            text-align: right;
+            font-weight: bold;
+            cursor: pointer;
+            content: "+";
+        }
+
+        .hud.active .close {
+            content: "-";
+        }
+
+        .hud .controls {
+            display: none;
+            flex-direction: column;
+        }
+
+        .hud.active .controls {
+            display: flex;
+        }
+
+        .hud .controls .variable {
+            padding: 5px;
+        }
+
+        .hud .controls .variable .name {
+            display: flex;
+            padding: 5px 0;
+            border-top: 1px solid black;
+        }
+
+        .hud .controls .variable .name h4 {
+            display: inline-block;
+            flex: 1;
+            margin: 0;
+        }
+
+        .hud .controls .variable .name .delta {
+            text-align: center;
+            width: 20%;
+        }
+
+        .hud .controls .variable .control {
+            display: flex;
+            height: 24px
+        }
+
+        .hud .controls .variable .control .value {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        .hud .controls .variable .control .plus,
+        .hud .controls .variable .control .minus {
+            width: 24px;
+        }
+    </style>
 </head>
 <body>
-    <table id="table">
+    <!-- <table id="table">
         <thread style="border: 1px solid black">
             <tr>
                 <td>CONST</td>
@@ -69,11 +145,120 @@
                 <button class="plusBtn">+</button>
             </td>
         </tr>
-    </table>
-    <canvas id="canvas">
+    </table> -->
+
+
+    
+
+
+    <div class="container">
+        <div class="hud active" id="hud">
+            <div class="close" id="toggler">-</div>
+            <div id="hud-controls" class="controls">
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        class ControlVariable {
+            constructor(id, context) {
+                this.id = id
+                this.context = context
+                this.states = {
+                    variable: {
+                        $element: null,
+                        default: 1
+                    },
+                    delta: {
+                        $element: null,
+                        default: 0.5
+                    }
+                }
+            }
+
+            get variable() {
+                return this.states.variable.$element ? this.states.variable.$element.value : this.states.variable.default
+            }
+            
+            get delta() {
+                return this.states.delta.$element ? this.states.delta.$element.value : this.states.delta.default
+            }
+            
+            setState(state, newValue) {
+                if(this.states[state] && this.states[stage].$element) {
+                    this.states[stage].$element.value = newValue
+                }
+            }
+
+            render = function() {
+                const template = `<div class="variable" id="${this.id}">
+                    <div class="name">
+                        <h4>${this.context.name}</h4>
+                        <input type="text" name="delta" id="delta-${this.id}" class="delta" value="${this.context.delta}">
+                    </div>
+                    <div class="control">
+                        <input type="button" value="-" class="minus">
+                        <input type="text" id="variable-${this.id}" name="value" class="value" value="${this.context.value}">
+                        <input type="button" value="+" class="plus">
+                    </div>
+                </div>`
+                return 
+            }
+        }
+        ControlVariable.prototype.template = `<div class="variable">
+            <div class="name">
+                <h4>${context.name}</h4>
+                <input type="text" name="delta" class="delta" value="${context.delta}">
+            </div>
+            <div class="control">
+                <input type="button" value="-" class="minus">
+                <input type="text" id="variable-${context.name}" name="value" class="value" value="${context.value}">
+                <input type="button" value="+" class="plus">
+            </div>
+        </div>`
+
+        const $hudControls = document.getElementById("hud-controls")
+        const variables = {
+            a: 1,
+            b: 1,
+            n1: 1,
+            n2: 1,
+            n3: 1,
+            m1: 1,
+            m2: 1
+        }
+
+        const variables = {
+            a: {
+                name: "a",
+                default: 1,
+                delta: 0.5,
+                $element: 
+            }
+        }
+        for(let k in variables) {
+            $hudControls.innerHTML += ControlVariable({name: k, value: variables[k], delta: 0.5})
+        }
+
+        $(document).on('click', '#hud #toggler', function(event) {
+            $(event.target).parent().toggleClass('active')
+        })
+
+        $(document).click('#hud .minus, .plus', function(event) {
+            const change = $(event.target).hasClass('minus') ? -1 : 1
+            const delta = parseFloat($(event.target).parents('.variable').find('.delta').val())
+            const current = parseFloat($(event.target).siblings('.value').val())
+            $(event.target).siblings('.value').val(current + delta * change)
+        })
+    </script>
+    
+    <canvas id="background"></canvas>
+
+    <!-- <canvas id="canvas">
         Your browser does not support html5 canvas.
     </canvas>
     <script src="main.js">
-    </script>
+    </script> -->
 </body>
 </html>

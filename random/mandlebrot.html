@@ -1,0 +1,108 @@
+<canvas></canvas>
+<script>
+    var canvas = document.querySelector('canvas');
+var context = canvas.getContext('2d');
+
+canvas.width = 400;
+canvas.height = 400;
+canvas.background = "#fff";
+
+function Rectangle(x, y, w, h) {
+  this.x = x;
+  this.y = y;
+  this.w = w;
+  this.h = h;
+  
+  this.draw = function() {
+    context.strokeRect(this.x, this.y, this.w, this.h);
+  }
+}
+
+const pixel = context.createImageData(1, 1);
+function setPixel(r, g, b, a) {
+  pixel.data[0] = r;
+  pixel.data[1] = g;
+  pixel.data[2] = b;
+  pixel.data[3] = a;
+}
+
+function putPixel(x, y) {
+    var c = Math.floor(i * 2.55);
+    setPixel(c, 0, 0, 220);
+    context.putImageData(pixel, x + canvas.width / 2, y + canvas.height / 2);
+}
+
+setPixel(0, 255, 0, 255);
+
+function Complex(a, b) {
+  this.a = a;
+  this.b = b;
+  
+  this.add = function(z) {
+    var a = this.a + z.a;
+    var b = this.b + z.b;
+    
+    return new Complex(a, b);
+  }
+  
+  this.multiply = function(z) {
+    var a = this.a * z.a - this.b * z.b;
+    var b = this.a * z.b + this.b * z.a;
+    
+    return new Complex(a, b);
+  }
+  
+  this.set = function(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+  
+  this.value = function() {
+    return Math.sqrt(this.a * this.a + this.b * this.b);
+    //return 1;
+  }
+  
+  this.show = function() {
+    console.log(this.a + " + " + "(" + this.b + ")i");
+  }
+}
+
+var i;
+var c;
+var z;
+var bounded;
+
+var step = 0.001
+for(var a = -2; a < 2; a+=step) {
+  for(var b = -2; b < 2; b+=step) {
+    //make a new complex number
+    c = new Complex(a, b);
+    z = new Complex(a, b);
+    i = 0;
+    bounded = true;
+    
+    while(i < 100) {
+      //console.log(z.value());
+      if(z.value() > 16) {
+        //console.log("not bounded");
+        bounded = false;
+        break;
+      }
+      //var na = z.a * z.a - z.b * z.b;
+      //var nb = 2 * z.a * z.b;
+      
+      //na = na + c.a;
+      //nb = nb + c.b;
+      
+      //z.set(na, nb);
+      z = z.multiply(z);
+      z = z.add(c);
+      ++i;
+    }
+
+    if(!bounded) {
+      putPixel(Math.floor(a * 100), Math.floor(b * 100), i);
+    }
+  }
+}
+</script>

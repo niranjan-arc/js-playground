@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <style>
+	body {
+		margin: '0px';
+	}
+  </style>
+</head>
+<body>
+<canvas>
+  </canvas>
+  <script>
+  var c = document.querySelector('canvas');
+var cc = c.getContext('2d');
+
+c.width = 500;
+c.height = 500;
+
+cc.strokeStyle = 'black';
+
+function Point() {
+  this.x = Math.round(Math.random() * 480 + 10);
+  this.y = Math.round(Math.random() * 480 + 10);
+  this.state = 'normal';
+  this.connectedTo = [];
+  this.draw = function() {
+    cc.fillStyle = this.state == 'normal' ? 'black' : 'red';
+    cc.strokeRect(this.x - 10, this.y - 10, 20, 20);
+    cc.beginPath();
+    cc.arc(this.x, this.y, 10, 0, 2*Math.PI);
+    cc.fill();
+    for(var i = 0; i < this.connectedTo.length; ++i) {
+      var p2 = this.connectedTo[i];
+      this.drawLine(p2);
+    }
+  }
+  
+  this.drawLine = function(end) {
+    cc.beginPath();
+    cc.moveTo(this.x, this.y);
+    cc.lineTo(end.x, end.y);
+    cc.stroke();
+  }
+}
+
+function makeConnections(points, N) {
+  points[0].connectedTo.push(points[0]);
+  points[0].connectedTo.push(points[1]);
+  points[0].connectedTo.push(points[2]);
+  
+  points[1].connectedTo.push(points[3]);
+  points[1].connectedTo.push(points[4]);
+  points[1].connectedTo.push(points[5]);
+  
+  points[2].connectedTo.push(points[4]);
+  points[2].connectedTo.push(points[6]);
+  
+  points[6].connectedTo.push(points[3]);
+  points[6].connectedTo.push(points[4]);
+  points[6].connectedTo.push(points[5]);
+  points[6].connectedTo.push(points[7]);
+  
+  points[7].connectedTo.push(points[5]);
+  points[7].connectedTo.push(points[6]);
+}
+
+
+var points = [];
+var selected;
+for(var i = 0; i < 8; ++i) {
+  var p = new Point();
+  points.push(p);
+}
+
+makeConnections(points, points.length);
+
+//
+function draw() {
+  cc.clearRect(0, 0, c.width, c.height);
+points.forEach(function(point, index) {
+  point.draw();
+});
+  requestAnimationFrame(draw);
+}
+
+draw();
+
+addEventListener('mousedown', function(event) {
+  for(var index = 0; index < points.length; ++index) {
+    var point = points[index];
+    if(event.x >= (point.x - 10) && event.x <= (point.x + 10) &&
+      event.y >= (point.y - 10) && event.y <= (point.y + 10)) {
+      cc.strokeRect(point.x - 10, point.y - 10, 20, 20);
+      console.log('Selected: ' + (index + 1));
+      selected = point;
+      break;
+    }
+  }
+});
+
+addEventListener('mouseup', function(event) {
+  if(selected) {
+    selected.state = 'normal';
+    selected = 'undefined';
+  }
+});
+
+addEventListener('mousemove', function(event) {
+  if(selected) {
+    selected.x = event.x - 10;
+    selected.y = event.y - 10;
+    selected.state = 'selected';
+  }
+});
+  </script>
+</body>
+</html>

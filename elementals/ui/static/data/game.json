@@ -1,0 +1,135 @@
+{
+    "elementals": [
+        {
+            "name": "air",
+            "ranks": {
+                "1": {
+                    "level": 1,
+                    "hp": 4,
+                    "attack": 3,
+                    "range": 2,
+                    "movement": 2
+                },
+                "2": {
+                    "level": 2,
+                    "hp": 12,
+                    "attack": 5,
+                    "range": 4,
+                    "movement": 4
+                },
+                "3": {
+                    "level": 3,
+                    "hp": 40,
+                    "attack": 10,
+                    "range": 7,
+                    "movement": 7
+                }
+            },
+            "passive": "In-built +1/+1/+2 bonus range and movement.",
+            "bonus": "Does damage and moves units one tile back, if they can't be moved due to any reason does 2x damge instead."
+        },
+        {
+            "name": "fire",
+            "ranks": {
+                "1": {
+                    "level": 1,
+                    "hp": 4,
+                    "attack": 3,
+                    "range": 1,
+                    "movement": 1
+                },
+                "2": {
+                    "level": 2,
+                    "hp": 12,
+                    "attack": 5,
+                    "range": 3,
+                    "movement": 3
+                },
+                "3": {
+                    "level": 3,
+                    "hp": 40,
+                    "attack": 10,
+                    "range": 5,
+                    "movement": 5
+                }
+            },
+            "passive": "40% chance to create a lower rank fire at original location (rank 2 or higher).",
+            "bonus": "75% chance to deal 1.5x Critical Damage."
+        },
+        {
+            "name": "water",
+            "ranks": {
+                "1": {
+                    "hp": 4,
+                    "attack": 3,
+                    "range": 1,
+                    "movement": 1
+                },
+                "2": {
+                    "hp": 12,
+                    "attack": 5,
+                    "range": 3,
+                    "movement": 3
+                },
+                "3": {
+                    "hp": 40,
+                    "attack": 10,
+                    "range": 5,
+                    "movement": 5
+                }
+            },
+            "passive": "Does 1.5x damage against Fire elementals.",
+            "bonus": "Does 50% damage to adjacet units."
+        },
+        {
+            "name": "earth",
+            "ranks": {
+                "1": {
+                    "hp": 5,
+                    "attack": 3,
+                    "range": 1,
+                    "movement": 1
+                },
+                "2": {
+                    "hp": 15,
+                    "attack": 5,
+                    "range": 3,
+                    "movement": 3
+                },
+                "3": {
+                    "hp": 45,
+                    "attack": 10,
+                    "range": 5,
+                    "movement": 5
+                }
+            },
+            "passive": "50% chance for lethal damage to deal half of current hp as damage (min health after taking hit can't be less than 1).",
+            "bonus": "Blocks board position if target dies."
+        },
+        {
+            "name": "void",
+            "ranks": {
+                "1": {
+                    "hp": 4,
+                    "attack": 3,
+                    "range": 1,
+                    "movement": 1
+                },
+                "2": {
+                    "hp": 10,
+                    "attack": 5,
+                    "range": 3,
+                    "movement": 3
+                },
+                "3": {
+                    "hp": 36,
+                    "attack": 10,
+                    "range": 14,
+                    "movement": 19
+                }
+            },
+            "passive": "20%/30%/40% chance to miss the hit.",
+            "bonus": "Provides max movement and attack range."
+        }
+    ]
+}
